@@ -1,0 +1,22 @@
+# Local machine files
+.DS_Store
+Thumbs.db
+
+# Local credentials and environment overrides
+.env
+.env.*
+!.env.example
+.aws/
+
+# User-provided local project images; never commit
+/lent1.png
+/lent2.png
+
+# Generated files
+node_modules/
+dist/
+playwright-report/
+test-results/
+coverage/
+
+.cache/
