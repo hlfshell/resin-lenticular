@@ -1011,3 +1011,81 @@ footer i {
 .input-unit input[type="number"] {
   appearance: textfield;
 }
+
+/* Keep the workspace controls close to the images. */
+main > .source-strip {
+  margin-top: 20px;
+}
+.aspect-lock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border-color: transparent;
+  font-size: 11px;
+  margin: -3px 0 14px;
+  padding: 5px 0;
+  color: var(--muted);
+}
+.aspect-lock.locked {
+  color: var(--mint);
+}
+.aspect-lock:hover:not(:disabled) {
+  background: transparent;
+  border-color: transparent;
+}
+.aspect-lock svg {
+  flex-shrink: 0;
+}
+.preview-action {
+  margin-left: auto;
+  white-space: nowrap;
+  color: var(--mint);
+  border-color: #426d63;
+}
+.workspace-toolbar {
+  flex-wrap: wrap;
+}
+.drag-handle {
+  font-size: 19px;
+  color: var(--muted);
+  cursor: grab;
+}
+.source-card[draggable="true"] {
+  cursor: grab;
+}
+.source-card[draggable="true"]:active {
+  cursor: grabbing;
+}
+.resource-details {
+  max-width: 520px;
+}
+.resource-details summary {
+  font-size: 10px;
+  color: var(--muted);
+  padding: 9px 0 0;
+}
+.resource-details p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+.notice + .editor,
+.job-status + .editor {
+  margin-top: 14px;
+}
+@media (max-width: 700px) {
+  .workspace-toolbar {
+    gap: 8px;
+  }
+  .workspace-toolbar .segmented {
+    width: 100%;
+  }
+  .preview-action {
+    margin-left: 0;
+  }
+  .zoom-control {
+    margin-left: auto;
+  }
+}

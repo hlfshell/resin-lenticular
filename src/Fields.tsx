@@ -77,3 +77,49 @@ export function Toggle({
     </label>
   );
 }
+
+export function AspectLock({
+  label,
+  locked,
+  onChange,
+}: {
+  label: string;
+  locked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`aspect-lock ${locked ? "locked" : ""}`}
+      aria-label={label}
+      aria-pressed={locked}
+      title={locked ? "Unlock width and height" : "Link width and height"}
+      onClick={() => onChange(!locked)}
+    >
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        aria-hidden="true"
+      >
+        {locked ? (
+          <>
+            <path d="m10 13 4-4" />
+            <path
+              d="m8 15-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 3 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"
+              transform="translate(1 0)"
+            />
+          </>
+        ) : (
+          <>
+            <path d="m7 14-2 2a3 3 0 0 0 4 4l3-3m5-7 2-2a3 3 0 0 0-4-4l-3 3M3 3l18 18" />
+          </>
+        )}
+      </svg>
+      {locked ? "Aspect ratio locked" : "Aspect ratio unlocked"}
+    </button>
+  );
+}

@@ -19,7 +19,7 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite. Desktop Firefox and Chrome are the supported browsers. Input changes commit on blur or Enter. Use **Update preview** after edits and **Generate print files** for full-resolution artifacts.
+Open the URL printed by Vite. Desktop Firefox and Chrome are the supported browsers. Input changes commit on blur or Enter. Use **Update preview** in the preview toolbar after edits and **Generate print files** for full-resolution artifacts.
 
 ## Build and host
 
@@ -40,9 +40,9 @@ Open `http://localhost:8080`. The container serves static files as an unprivileg
 ## Workflow
 
 1. Add at least two images. Each is fit proportionally onto a common canvas. Choose physical dimensions and density in **Print**.
-2. Select a source and open **Image**. Drag on the alignment canvas or enter exact offsets, size, rotation, and crop bounds. Choose a reference and adjust overlay opacity. **Quick feature alignment** attempts a bounded feature match; manual alignment remains available if confidence is insufficient.
+2. Drag source cards to reorder them, or select one and use **Move left/right**. Ctrl/Cmd+Z undoes edits; Ctrl/Cmd+Shift+Z or Ctrl+Y redoes them. Text fields retain their normal text-editing shortcuts. Canvas and image dimensions are linked by default; use the chain control to unlock width and height. Select a source and open **Image**. Drag on the alignment canvas or enter exact offsets, size, rotation, and crop bounds. Choose a reference and adjust overlay opacity. **Quick feature alignment** attempts a bounded feature match; manual alignment remains available if confidence is insufficient.
 3. Open **Lens** to set LPI, angle, profile, phase, inversion, and optional depth endpoints. An angle of 0° gives vertical ridges; 90° gives horizontal ridges. Depth inversion changes height values only.
-4. Inspect the preview and generate print files. Preserve the exported physical size when importing the PNGs into another application.
+4. Inspect the preview and generate print files. Download buttons show actual compressed file sizes. The expandable Memory usage section estimates processing RAM, not download size. Preserve the exported physical size when importing the PNGs into another application.
 5. Save YAML or the ZIP bundle. To resume, upload the source images and open the YAML. Identical content is matched by SHA-256 even after renaming; changed files require explicit mapping. Source images are not embedded in the bundle.
 
 Calibration bundles contain paired sheet PNGs, the restorable ordinary project YAML, and a separate calibration recipe with LPI/amplitude choices and sheet dimensions. Labels occupy separate bands above the samples. The view slider is an ordering illustration, not an optical simulation.
@@ -60,8 +60,9 @@ npm run typecheck
 npm test
 npx playwright install --with-deps chromium firefox
 npm run test:e2e
+npm run test:dev
 ```
 
-Core checks independently decode PNGs and verify alpha, depth precision, geometry, and configuration behavior. Browser checks exercise the user workflow in both engines. Fixtures are generated; private local example images are ignored and excluded from Docker/build inputs.
+Core checks independently decode PNGs and verify alpha, depth precision, geometry, and configuration behavior. Browser checks exercise the user workflow in both engines. The separate development-server suite starts Vite with a cold dependency cache to catch import-triggered reloads. Fixtures are generated; private local example images are ignored and excluded from Docker/build inputs.
 
 The agreed specification and dependency-ordered tickets live in [`.scratch/browser-lenticular/`](.scratch/browser-lenticular/README.md).

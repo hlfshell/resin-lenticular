@@ -57,6 +57,11 @@ function download(blob: Blob, name: string) {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 15000);
 }
+function formatBytes(bytes: number) {
+  return bytes < 1_000_000
+    ? `${(bytes / 1000).toFixed(1)} KB`
+    : `${(bytes / 1_000_000).toFixed(2)} MB`;
+}
 export default function App() {
   const [project, setProject] = useState<Project>({
       version: 1,
@@ -93,7 +98,8 @@ export default function App() {
     [sampleMm, setSampleMm] = useState(15);
   const fileInput = useRef<HTMLInputElement>(null),
     configInput = useRef<HTMLInputElement>(null),
-    replaceInput = useRef<HTMLInputElement>(null);
+    replaceInput = useRef<HTMLInputElement>(null),
+    draggedSource = useRef<string | null>(null);
   const urls = useBlobURLs(preview),
     assetRefs = useRef(assets);
   assetRefs.current = assets;
@@ -127,9 +133,38 @@ export default function App() {
     }
     setProject(next);
     invalidate();
-    setSelected(next.sources[0]?.id ?? "");
-    setReference(next.sources[0]?.id ?? "");
+    setSelected((id) =>
+      next.sources.some((s) => s.id === id) ? id : (next.sources[0]?.id ?? ""),
+    );
+    setReference((id) =>
+      next.sources.some((s) => s.id === id) ? id : (next.sources[0]?.id ?? ""),
+    );
   };
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        busy ||
+        event.defaultPrevented ||
+        event.altKey ||
+        !(event.ctrlKey || event.metaKey)
+      )
+        return;
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        target.closest(
+          'input:not([type="checkbox"]):not([type="range"]), textarea, [contenteditable="true"]',
+        )
+      )
+        return;
+      const key = event.key.toLowerCase();
+      if (key !== "z" && key !== "y") return;
+      event.preventDefault();
+      restoreHistory(key === "y" || event.shiftKey ? "redo" : "undo");
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [busy, project, past, future]);
   // Retain files referenced by undo/redo, and release thumbnails once no state can reach them.
   useEffect(() => {
     const ids = new Set(
@@ -198,10 +233,8 @@ export default function App() {
     if (result) {
       setPreview(result);
       if (!previewOnly) setOutput(result);
-      setMode("art");
-      setMessage(
-        previewOnly ? "Preview updated." : "Print files are ready to download.",
-      );
+      setMode((current) => (current === "depth" ? "depth" : "art"));
+      setMessage("");
     }
   }
   async function align() {
@@ -307,10 +340,6 @@ export default function App() {
           <small>IMAGE & LENS STUDIO</small>
         </a>
         <div className="header-actions">
-          <span className="local-badge">
-            <i />
-            Local by design
-          </span>
           <button onClick={() => configInput.current?.click()} disabled={busy}>
             Open YAML
           </button>
@@ -362,27 +391,6 @@ export default function App() {
         }}
       />
       <main>
-        <section className="intro">
-          <div>
-            <div className="eyebrow">A DIFFERENT WAY TO SEE</div>
-            <h1>Make every angle count.</h1>
-            <p>
-              Align your images. Shape the lenses. Create a print that changes
-              perspective.
-            </p>
-          </div>
-          <div className="default-stats">
-            <span>
-              <b>{project.settings.ppi}</b> PPI
-            </span>
-            <span>
-              <b>{project.settings.lpi}</b> LPI
-            </span>
-            <span>
-              <b>{project.sources.length.toString().padStart(2, "0")}</b> VIEWS
-            </span>
-          </div>
-        </section>
         <section
           className="source-strip panel"
           onDragOver={(e) => e.preventDefault()}
@@ -394,12 +402,12 @@ export default function App() {
           <div className="source-heading">
             <div>
               <span className="eyebrow">SOURCE IMAGES</span>
-              <small>Ordered by viewing direction</small>
+              <small>Drag to reorder</small>
             </div>
             <div className="history">
               <button
                 aria-label="Undo"
-                title="Undo"
+                title="Undo (Ctrl/Cmd+Z)"
                 disabled={busy || !past.length}
                 onClick={() => restoreHistory("undo")}
               >
@@ -407,7 +415,7 @@ export default function App() {
               </button>
               <button
                 aria-label="Redo"
-                title="Redo"
+                title="Redo (Ctrl/Cmd+Shift+Z)"
                 disabled={busy || !future.length}
                 onClick={() => restoreHistory("redo")}
               >
@@ -421,15 +429,52 @@ export default function App() {
                 key={source.id}
                 className={`source-card ${selected === source.id ? "selected" : ""}`}
                 disabled={busy}
+                draggable={!busy}
+                title="Drag to reorder; click to select"
+                onDragStart={(e) => {
+                  draggedSource.current = source.id;
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData(
+                    "application/x-lenticular-source",
+                    source.id,
+                  );
+                }}
+                onDragEnd={() => {
+                  draggedSource.current = null;
+                }}
+                onDragOver={(e) => {
+                  if (draggedSource.current) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                  }
+                }}
+                onDrop={(e) => {
+                  const id = draggedSource.current;
+                  if (!id || busy) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  draggedSource.current = null;
+                  const from = project.sources.findIndex((s) => s.id === id);
+                  if (from < 0 || from === index) return;
+                  const sources = [...project.sources];
+                  const [moved] = sources.splice(from, 1);
+                  sources.splice(index, 0, moved);
+                  update({ ...project, sources });
+                  setSelected(id);
+                }}
                 onClick={() => {
                   setSelected(source.id);
                   setMode("sources");
                 }}
               >
+                <span className="drag-handle" aria-hidden="true">
+                  ⠿
+                </span>
                 <div className="thumb checker">
                   <img
                     src={assets.find((a) => a.id === source.id)?.url}
                     alt=""
+                    draggable={false}
                   />
                   <span>{String(index + 1).padStart(2, "0")}</span>
                 </div>
@@ -456,21 +501,23 @@ export default function App() {
               <span>Selected: {project.sources[selectedIndex].name}</span>
               <button
                 disabled={busy || selectedIndex === 0}
+                aria-label="Move image left"
                 onClick={() => moveOrder(-1)}
               >
-                ← Earlier
+                ← Move left
               </button>
               <button
                 disabled={busy || selectedIndex === project.sources.length - 1}
+                aria-label="Move image right"
                 onClick={() => moveOrder(1)}
               >
-                Later →
+                Move right →
               </button>
               <button
                 disabled={busy}
                 onClick={() => replaceInput.current?.click()}
               >
-                Replace
+                Replace image
               </button>
               <button
                 disabled={busy}
@@ -481,7 +528,7 @@ export default function App() {
                   if (reference === selected) setReference(next[0]?.id ?? "");
                 }}
               >
-                Remove
+                Remove image
               </button>
             </div>
           )}
@@ -568,6 +615,24 @@ export default function App() {
             <button onClick={() => setPending(null)}>Dismiss</button>
           </section>
         )}
+        {busy && (
+          <div className="job-status" role="status">
+            <div>
+              <span>{jobLabel}</span>
+              <span>{Math.round(progress * 100)}%</span>
+            </div>
+            <progress value={progress} max="1" />
+            <button onClick={cancel}>Cancel</button>
+          </div>
+        )}
+        {message && (
+          <div
+            role={error ? "alert" : "status"}
+            className={`notice ${error ? "warning" : "success"}`}
+          >
+            {message}
+          </div>
+        )}
         <div className="editor">
           <Workspace
             project={project}
@@ -579,6 +644,8 @@ export default function App() {
             setMode={setMode}
             preview={urls}
             busy={busy}
+            updatePreview={() => void generate(true)}
+            canPreview={project.sources.length >= 2 && !invalid}
             move={(x, y) =>
               update({
                 ...project,
@@ -611,17 +678,18 @@ export default function App() {
             <small>
               {((px.width * 25.4) / project.settings.ppi).toFixed(3)} ×{" "}
               {((px.height * 25.4) / project.settings.ppi).toFixed(3)} mm after
-              pixel rounding · ~{Math.ceil(budget.bytes / 1e6)} MB working
-              estimate
+              pixel rounding
             </small>
+            <details className="resource-details">
+              <summary>Memory usage</summary>
+              <p>
+                Estimated processing RAM: {Math.ceil(budget.bytes / 1e6)} MB,
+                plus source images. This is not the download size. PNGs are
+                compressed; actual file sizes appear after generation.
+              </p>
+            </details>
           </div>
           <div className="export-actions">
-            <button
-              disabled={busy || project.sources.length < 2 || !!invalid}
-              onClick={() => void generate(true)}
-            >
-              Update preview
-            </button>
             <button
               className="primary"
               disabled={
@@ -644,24 +712,6 @@ export default function App() {
             {invalid || warnings.join(" ")}
           </div>
         )}
-        {busy && (
-          <div className="job-status" role="status">
-            <div>
-              <span>{jobLabel}</span>
-              <span>{Math.round(progress * 100)}%</span>
-            </div>
-            <progress value={progress} max="1" />
-            <button onClick={cancel}>Cancel</button>
-          </div>
-        )}
-        {message && (
-          <div
-            role={error ? "alert" : "status"}
-            className={`notice ${error ? "warning" : "success"}`}
-          >
-            {message}
-          </div>
-        )}
         {output && (
           <section className="downloads panel">
             <div>
@@ -674,18 +724,18 @@ export default function App() {
             <button
               onClick={() => download(output.art, "lenticular-artwork.png")}
             >
-              Artwork PNG
+              Artwork PNG · {formatBytes(output.art.size)}
             </button>
             <button
               onClick={() => download(output.depth, "lenticular-depth.png")}
             >
-              Depth PNG
+              Depth PNG · {formatBytes(output.depth.size)}
             </button>
             <button
               className="primary"
               onClick={() => download(output.zip, "lenticular.zip")}
             >
-              Download bundle ↓
+              Download bundle · {formatBytes(output.zip.size)} ↓
             </button>
           </section>
         )}
@@ -779,12 +829,6 @@ export default function App() {
           </fieldset>
         </details>
       </main>
-      <footer>
-        <span>
-          RESIN LENTICULAR <i> / </i> A little shift. A new perspective.
-        </span>
-        <span>No uploads. No accounts. Just your images.</span>
-      </footer>
     </>
   );
 }

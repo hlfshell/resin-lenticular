@@ -30,7 +30,7 @@ test("local studio edits, exports matching transparent files, and restores YAML"
   });
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: "Make every angle count." }),
+    page.getByRole("button", { name: "Update preview", exact: true }),
   ).toBeVisible();
   await page
     .getByLabel("Add source images")

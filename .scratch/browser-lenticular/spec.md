@@ -39,7 +39,8 @@ Provide:
 - Exact X/Y offsets and size fields; pixel offsets use final output-canvas coordinates.
 - Dimensional fields switchable between pixels, mm, and inches; aspect-ratio lock.
 - Crop bounds and an adjustable-opacity reference overlay for manual alignment.
-- Undo, redo, and reset.
+- Undo, redo, and reset. Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z or Ctrl+Y redoes, while text fields retain native editing shortcuts.
+- Canvas and image aspect ratios are locked by default, with explicit chain controls to unlock them. Source cards support drag reordering and clearly labeled movement buttons.
 
 Use familiar image-editor toolbar conventions. The overlay opacity is an editing aid and must not alter exported source alpha.
 
@@ -64,6 +65,8 @@ At each output pixel, select the source view using the interlacing geometry. The
 ## Previews and calibration
 
 Provide aligned-source, interlaced-artwork, and depth previews; zoom; a transparency checkerboard; and an optional lens-boundary overlay. A view slider illustrates source-view order and is explicitly not an accurate optical simulation.
+
+Keep preview refresh in the workspace toolbar. Keep the interface focused on editing; omit marketing banners and footer slogans. Show actual compressed file sizes on download controls and keep processing-memory estimates separately expandable.
 
 Use reduced-resolution previews for responsiveness without modifying export settings. In particular, scale preview lens geometry consistently with export coordinates.
 

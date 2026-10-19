@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NumberField as N, Toggle } from "./Fields";
+import { NumberField as N, Toggle, AspectLock } from "./Fields";
 import { fit, type Project, type Placement, type Settings } from "./core/model";
 const presets: Record<string, [number, number]> = {
   A2: [420, 594],
@@ -32,7 +32,8 @@ export function Inspector({
 }) {
   const [tab, setTab] = useState("print"),
     [unit, setUnit] = useState<"mm" | "in" | "px">("mm"),
-    [lock, setLock] = useState(true);
+    [lock, setLock] = useState(true),
+    [canvasLock, setCanvasLock] = useState(true);
   const s = project.settings,
     source = project.sources.find((i) => i.id === selected),
     p = source?.placement;
@@ -128,7 +129,14 @@ export function Inspector({
                 min={0.001}
                 step={0.1}
                 suffix={unit}
-                onChange={(v) => settings({ widthMm: v * factor })}
+                onChange={(v) =>
+                  settings({
+                    widthMm: v * factor,
+                    ...(canvasLock
+                      ? { heightMm: (v * factor * s.heightMm) / s.widthMm }
+                      : {}),
+                  })
+                }
               />
               <N
                 label="Canvas height"
@@ -136,9 +144,21 @@ export function Inspector({
                 min={0.001}
                 step={0.1}
                 suffix={unit}
-                onChange={(v) => settings({ heightMm: v * factor })}
+                onChange={(v) =>
+                  settings({
+                    heightMm: v * factor,
+                    ...(canvasLock
+                      ? { widthMm: (v * factor * s.widthMm) / s.heightMm }
+                      : {}),
+                  })
+                }
               />
             </div>
+            <AspectLock
+              label="Lock canvas aspect ratio"
+              locked={canvasLock}
+              onChange={setCanvasLock}
+            />
             <button
               className="wide subtle"
               onClick={() =>
@@ -199,9 +219,9 @@ export function Inspector({
                   onChange={(v) => size("height", v)}
                 />
               </div>
-              <Toggle
-                label="Lock aspect ratio"
-                checked={lock}
+              <AspectLock
+                label="Lock image aspect ratio"
+                locked={lock}
                 onChange={setLock}
               />
               <N

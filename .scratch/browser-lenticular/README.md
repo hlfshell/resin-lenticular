@@ -1,6 +1,6 @@
 # Implementation tickets
 
-Parent: [Specification](spec.md). All ten tickets are resolved. See [verification and review](verification.md) for evidence and practical limits.
+Parent: [Specification](spec.md). The initial ten implementation tickets and editor feedback ticket are resolved. See [verification and review](verification.md) for evidence and practical limits.
 
 | Ticket | Blocked by |
 | --- | --- |
@@ -14,3 +14,4 @@ Parent: [Specification](spec.md). All ten tickets are resolved. See [verificatio
 | [08: Generate registered LPI and depth calibration sheets](issues/08-calibration-sheet.md) | 02, 04, 07 |
 | [09: Keep large exports responsive and cancellable](issues/09-bounded-exports.md) | 06, 07 |
 | [10: Ship the dragon identity and static Docker hosting](issues/10-branding-hosting.md) | 01 |
+| [11: Fix import loss and streamline editor controls](issues/11-editor-usability.md) | None |

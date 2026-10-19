@@ -35,3 +35,7 @@ Review totals: Standards had one concrete lifecycle finding (resolved) and one n
 - Worker rendering is cancellable and PNG encoding uses scanlines, but complete output arrays and download artifacts are retained in memory; this is not an unlimited streaming renderer.
 - Feature matching is deliberately bounded and conservative. Difficult images fall back to manual alignment.
 - Print-file geometry and formats are verified digitally; the tool makes no claim to simulate physical optics.
+
+## Editor feedback follow-up
+
+See [ticket 11](issues/11-editor-usability.md). A cold Vite startup revealed an import-triggered dependency reload not covered by the original production-only suite. Worker dependencies are now prebundled and a separate cold-start development suite runs in CI. The revised production suite has twelve passing browser checks, including keyboard undo/redo, aspect locks, and drag reordering.

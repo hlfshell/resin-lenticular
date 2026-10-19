@@ -16,6 +16,8 @@ export function Workspace({
   preview,
   move,
   busy,
+  updatePreview,
+  canPreview,
 }: {
   project: Project;
   assets: Asset[];
@@ -27,6 +29,8 @@ export function Workspace({
   preview: { art: string; depth: string } | null;
   move: (x: number, y: number) => void;
   busy: boolean;
+  updatePreview: () => void;
+  canPreview: boolean;
 }) {
   const [zoom, setZoom] = useState(1),
     [boundaries, setBoundaries] = useState(false),
@@ -82,6 +86,13 @@ export function Workspace({
             </button>
           ))}
         </div>
+        <button
+          className="preview-action"
+          disabled={busy || !canPreview}
+          onClick={updatePreview}
+        >
+          Update preview
+        </button>
         <label className="zoom-control">
           Zoom{" "}
           <select
@@ -141,16 +152,8 @@ export function Workspace({
                   src={`${import.meta.env.BASE_URL}dragon.svg`}
                   alt="Angular ridged dragon"
                 />
-                <h2>
-                  One print.
-                  <br />
-                  Another perspective.
-                </h2>
-                <p>
-                  Add two images to begin.
-                  <br />
-                  Everything stays in your browser.
-                </p>
+                <h2>Add images to begin</h2>
+                <p>PNG · JPEG · WebP</p>
                 <span className="empty-cross">+</span>
               </div>
             ) : mode === "art" || mode === "depth" ? (
