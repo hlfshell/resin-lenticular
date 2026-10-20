@@ -1,8 +1,12 @@
 # resin-lenticular
 
-Create lenticular artwork and matching transparent depth maps from two or more images. Align, crop, and resize your images, then generate print files or a calibration sheet.
+<img src="docs/assets/vibe-coded.gif" alt="vibe-coded" width="160" height="28">
 
-Runs entirely in your browser. Supports Chrome and Firefox. Defaults to 1440 PPI and 40 LPI.
+Create faux-lenticular lens artwork with uv resin / dtf printers.
+
+Runs entirely in your browser.
+
+Hosted at [lenticular.hlfshell.ai](https://lenticular.hlfshell.ai).
 
 ## Run
 
