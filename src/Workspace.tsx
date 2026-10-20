@@ -18,6 +18,8 @@ export function Workspace({
   busy,
   updatePreview,
   canPreview,
+  generateFiles,
+  canExport,
 }: {
   project: Project;
   assets: Asset[];
@@ -31,6 +33,8 @@ export function Workspace({
   busy: boolean;
   updatePreview: () => void;
   canPreview: boolean;
+  generateFiles: () => void;
+  canExport: boolean;
 }) {
   const [zoom, setZoom] = useState(1),
     [boundaries, setBoundaries] = useState(false),
@@ -92,6 +96,13 @@ export function Workspace({
           onClick={updatePreview}
         >
           Update preview
+        </button>
+        <button
+          className="primary"
+          disabled={busy || !canExport}
+          onClick={generateFiles}
+        >
+          Generate print files
         </button>
         <label className="zoom-control">
           Zoom{" "}

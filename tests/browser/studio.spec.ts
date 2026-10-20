@@ -150,20 +150,20 @@ test("calibration, inversion preview, cancellation and oversized canvas remain u
   await expect(
     page.getByText("Calibration sheet is ready.", { exact: true }),
   ).toBeVisible();
-  const [download] = await Promise.all([
+  const [artDownload] = await Promise.all([
     page.waitForEvent("download"),
-    page.getByRole("button", { name: "Sheet bundle" }).click(),
+    page.getByRole("button", { name: "Sheet artwork", exact: true }).click(),
   ]);
-  const files = unzipSync(
-    new Uint8Array(await readFile((await download.path())!)),
-  );
-  const art = PNG.sync.read(Buffer.from(files["calibration-artwork.png"]));
-  const depth = PNG.sync.read(Buffer.from(files["calibration-depth.png"]));
+  const [depthDownload] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("button", { name: "Sheet depth", exact: true }).click(),
+  ]);
+  const art = PNG.sync.read(await readFile((await artDownload.path())!));
+  const depth = PNG.sync.read(await readFile((await depthDownload.path())!));
   expect(art.width).toBe(130);
   expect(art.height).toBe(215);
   expect(depth.width).toBe(art.width);
   expect(depth.height).toBe(art.height);
-  expect(strFromU8(files["calibration-recipe.yaml"])).toContain("widthMm: 23");
   await page.getByLabel("Open project YAML").setInputFiles({
     name: "bad.yaml",
     mimeType: "application/yaml",

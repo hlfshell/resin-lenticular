@@ -4,7 +4,6 @@ import { Workspace, type Asset } from "./Workspace";
 import { NumberField } from "./Fields";
 import {
   defaults,
-  dimensions,
   exportBudget,
   checkSettings,
   fit,
@@ -311,8 +310,7 @@ export default function App() {
     heightMm: amplitudes.split(",").length * (sampleMm + 7) + 2,
   };
   const sheetBudget = exportBudget({ ...project.settings, ...sheetSize });
-  const budget = exportBudget(project.settings),
-    px = dimensions(project.settings);
+  const budget = exportBudget(project.settings);
   let warnings: string[] = [];
   let invalid = "";
   try {
@@ -334,10 +332,7 @@ export default function App() {
       <header className="app-header">
         <a className="brand" href="./">
           <img src={`${import.meta.env.BASE_URL}dragon.svg`} alt="" />
-          <div>
-            RESIN<span>LENTICULAR</span>
-          </div>
-          <small>IMAGE & LENS STUDIO</small>
+          <div>resin-lenticular</div>
         </a>
         <div className="header-actions">
           <button onClick={() => configInput.current?.click()} disabled={busy}>
@@ -646,6 +641,10 @@ export default function App() {
             busy={busy}
             updatePreview={() => void generate(true)}
             canPreview={project.sources.length >= 2 && !invalid}
+            generateFiles={() => void generate(false)}
+            canExport={
+              project.sources.length >= 2 && !invalid && budget.supported
+            }
             move={(x, y) =>
               update({
                 ...project,
@@ -669,41 +668,6 @@ export default function App() {
             busy={busy}
           />
         </div>
-        <section className="export-bar panel">
-          <div>
-            <div className="eyebrow">OUTPUT AT ACTUAL SIZE</div>
-            <strong>
-              {px.width.toLocaleString()} × {px.height.toLocaleString()} px
-            </strong>
-            <small>
-              {((px.width * 25.4) / project.settings.ppi).toFixed(3)} ×{" "}
-              {((px.height * 25.4) / project.settings.ppi).toFixed(3)} mm after
-              pixel rounding
-            </small>
-            <details className="resource-details">
-              <summary>Memory usage</summary>
-              <p>
-                Estimated processing RAM: {Math.ceil(budget.bytes / 1e6)} MB,
-                plus source images. This is not the download size. PNGs are
-                compressed; actual file sizes appear after generation.
-              </p>
-            </details>
-          </div>
-          <div className="export-actions">
-            <button
-              className="primary"
-              disabled={
-                busy ||
-                project.sources.length < 2 ||
-                !!invalid ||
-                !budget.supported
-              }
-              onClick={() => void generate(false)}
-            >
-              Generate print files <span>↗</span>
-            </button>
-          </div>
-        </section>
         {(!budget.supported || invalid || warnings.length > 0) && (
           <div className="notice warning">
             {!budget.supported
@@ -818,11 +782,6 @@ export default function App() {
                   }
                 >
                   Sheet depth
-                </button>
-                <button
-                  onClick={() => download(calibration.zip, "calibration.zip")}
-                >
-                  Sheet bundle ↓
                 </button>
               </div>
             )}
